@@ -1,0 +1,45 @@
+#+title: Readme
+
+Gundroid = Guix + Android ♥
+* Desciption
+This channel contains: [[https://developer.android.com/studio/command-line][cli-tools]], [[https://developer.android.com/studio/run/emulator][emulator]] and [[https://developer.android.com/studio][android-studio]].
+
+Originally took Android Studio launching example from Julien Lepiller (@roptat) [[https://lepiller.eu/en/running-android-studio-on-guix.html][blogpost]]. You can also take a look on his [[https://framagit.org/tyreunom/guix-android][guix-android]] channel.
+* Launching Android Studio
+Currently launching Android Studio easily from the package itself is not implemented. It can be launched in a container. Assuming you are at this channel's root directory do the following:
+
+1. Build the ~studio~ package and get it's store path
+    #+begin_src sh
+    guix build -f gundroid/studio.scm -L.
+    ...
+    /gnu/store/...-android-studio-2022.1.1.19
+    #+end_src
+
+2. Launch the container and bash into it
+    #+begin_src sh
+    guix shell -C -F -N -L. \
+        -e "(@@ (gundroid packages studio) studio)" \
+        --share=$XAUTHORITY --share=/tmp/.X11-unix \
+        --share=/dev/shm --expose=/etc/machine-id \
+        --share=$HOME --share=/dev/kvm \
+        --preserve=XAUTHORITY --preserve=DISPLAY \
+        -m $PWD/gundroid/manifest.scm \
+        -- bash
+    #+end_src
+
+3. Go to studio's store path being in the container and launch the studio
+   #+begin_src sh
+   cd /gnu/store/...-android-studio-2022.1.1.19
+   ./bin/studio.sh
+   #+end_src
+
+But even with this the emulator inside the studio won't work. You have to propely set up Android envvars (ANDOID_HOME and PATH) to integrate with ~emulator~ and ~cli-tools~: see [[https://developer.android.com/studio/command-line/variables][environment variables reference]] on android's doc page.
+
+The best way to make the studio work would be to add emulator and cli-tools as packages's inputs and create separate gexp-script to automatically lauch it in a container (see nonguix steam example) with the customizable environment vars set where'd user like to have their ANDROID_HOME.
+* Nonfree software warning
+This channels includes nonfree software!
+
+Please do NOT promote this repository on any official Guix communication channels, such as their mailing lists or IRC channel, even in response to support requests! This is to show respect for the Guix project’s strict policy against recommending nonfree software, and to avoid any unnecessary hostility.
+
+* Legal notices
+[[https://developer.android.com/legal][Android legal notice]]
