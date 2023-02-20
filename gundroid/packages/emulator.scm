@@ -109,7 +109,15 @@
                     (bin (string-append out "/bin"))
                     (emulator (string-append out "/emulator")))
                (mkdir-p bin)
-               (symlink emulator (string-append bin "/emulator"))))))))
+               (symlink emulator (string-append bin "/emulator")))))
+         (add-after 'install-wrapper 'export-shared-libs
+           (lambda* (#:key inputs outputs system #:allow-other-keys)
+             (let* ((out (assoc-ref outputs "out"))
+                    (exe (string-append out "/bin/emulator"))
+                    (lib (string-append out "/lib64")))
+               (wrap-program exe
+                 `("LD_LIBRARY_PATH" ":" prefix
+                   (,lib)))))))))
     (supported-systems '("x86_64-linux"))
     (synopsis
      "The Android Emulator simulates Android devices on your computer")
