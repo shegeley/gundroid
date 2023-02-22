@@ -26,7 +26,7 @@
    "https://developer.android.com/studio/command-line"
    ""))
 
-(define cli-tools-versioning
+(define versioning
   ;; https://developer.android.com/studio/releases/platform-tools#revisions
   `(("34.0.0" .
      ((release-date . "02.2023")
@@ -40,7 +40,7 @@
 (define* (cli-tools
           #:key
           (version "33.0.3")
-          (versioning cli-tools-versioning))
+          (versioning versioning))
   (package
     (name "android-commandline-tools")
     (version version)

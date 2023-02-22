@@ -16,8 +16,8 @@
   #:use-module (ice-9 match)
 
   #:export (studio
-            studio-specifications
-            studio-versioning))
+            specifications
+            versioning))
 
 (define android-studio-license
   ((@@ (guix licenses) license)
@@ -30,7 +30,7 @@
    "https://redirector.gvt1.com/edgedl/android/studio/ide-zips/"
    version "/android-studio-" version "-linux.tar.gz"))
 
-(define studio-versioning
+(define versioning
   `(("2022.1.1.19" .
      ((jdk-dir . "jbr")
       ;; NOTE: jbr = runtime environment based on OpenJDK for running IntelliJ Platform-based products on Windows, macOS, and Linux
@@ -42,7 +42,7 @@
       (jdk-version . "11")
       (hash . "1jjnfzvljnm9p5n6l7hp7k254p8z5cadpzkv9s4vfips1z7b1bc9")))))
 
-(define (studio-specifications verinfo)
+(define (specifications verinfo)
   (list
    ;; NOTE: need to determine openjdk version from version info. recent ~android studio~ uses jdk 17, previous ones (before 2022.1, including oneself) using jdk 11
    (string-append
@@ -86,7 +86,7 @@
 
 (define* (studio #:key
                  (version "2022.1.1.19")
-                 (versioning studio-versioning))
+                 (versioning versioning))
   (let ((verinfo (assoc-ref versioning version)))
     (package
       (name "android-studio")
@@ -102,7 +102,7 @@
        (list
         #:validate-runpath? #f))
       (inputs (map specification->package+output
-                   (studio-specifications verinfo)))
+                   (specifications verinfo)))
       (synopsis
        "Official Integrated Development Environment (IDE) for Android app development")
       (description
