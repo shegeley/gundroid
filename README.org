@@ -8,8 +8,9 @@ Originally took Android Studio launching example from Julien Lepiller (@roptat) 
 * TODO Setting everything up to run Android Emulator (without Android Studio)
 Before lauching the emulator the followings needs to be properly packed (patchelf'ed) and expose proper binaries:
 - [X] cli-tools (apkanalyzer, avdmanager, lint, retrace, sdkmanager)
-- [X] emulator (emulator, mksdcard)
-- [ ] build-tools (adb, etc1tool, fastboot, logcat)
+- [ ] emulator (emulator, mksdcard)
+- [ ] build-tools (aapt2, apksigner, zipalign)
+- [ ] platform-tools (adb, etc1tool, fastboot, logcat)
 
 (see [[https://developer.android.com/studio/command-line][(1)]] as reference)
 
@@ -17,6 +18,7 @@ Even having it packed propely emulator won't work, because it would expect envva
 - commandline tools bins: cmdline-tools/version/bin/
 - build tools bins: build-tools/version
 - emulator's bins: emulator
+- platform-tools bins: platform-tools
 
 This can be done by creating guix service after packing all them propely.
 * Launching Android Studio
@@ -47,7 +49,7 @@ Currently launching Android Studio easily from the package itself is not impleme
    ./bin/studio.sh
    #+end_src
 
-But even with this the emulator inside the studio won't work. You have to propely set up Android envvars (ANDOID_HOME and PATH) to integrate with ~emulator~ and ~cli-tools~: see [[https://developer.android.com/studio/command-line/variables][environment variables reference]] on android's doc page.
+But even with this the emulator inside the studio won't work. You have to propely set up Android envvars (~ANDOID_HOME~ and ~PATH~) to integrate with ~emulator~ and ~cli-tools~: see [[https://developer.android.com/studio/command-line/variables][environment variables reference]] on android's doc page.
 
 The best way to make the studio work would be to add emulator and cli-tools as packages's inputs and create separate gexp-script to automatically lauch it in a container (see nonguix steam example) with the customizable environment vars set where'd user like to have their ~ANDROID_HOME~.
 * Nonfree software warning
