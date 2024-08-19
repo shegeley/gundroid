@@ -2,4 +2,18 @@
 
 (channel
  (version 0)
- (directory "src"))
+ (directory "src")
+ (dependencies
+  (channel
+   (name guix-android)
+   (url "https://framagit.org/tyreunom/guix-android")
+   (commit "795f11d4305bb7ce9a2e79669fe8cb4673a9d0c2"))
+  (channel
+   (name 'guix)
+   (url "https://git.savannah.gnu.org/git/guix.git")
+   (commit "79d2c8e7b9802715af505ded452bcef26351071f")
+   (introduction
+    (make-channel-introduction
+     "9edb3f66fd807b096b48283debdcddccfea34bad"
+     (openpgp-fingerprint
+      "BBB0 2DDF 2CEA F6A8 0D1D  E643 A2A0 6DF2 A33A 54FA"))))))
