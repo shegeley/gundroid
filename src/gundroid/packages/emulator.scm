@@ -57,7 +57,7 @@
     "vulkan-headers"
     "vulkan-tools"
     "glibc"
-    "gcc:lib"
+    "gcc-toolchain"
     "ell"
     "libgccjit"
     "gperftools"
@@ -126,3 +126,5 @@
     "The Android Emulator simulates Android devices on your computer so that you can test your application on a variety of devices and Android API levels without needing to have each physical device. It offers: Flexibility, High fidelity, Speed.")
    (home-page "https://developer.android.com")
    (license emulator-license)))
+
+(emulator)

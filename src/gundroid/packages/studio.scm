@@ -118,3 +118,5 @@
     - Built-in support for Google Cloud Platform, making it easy to integrate Google Cloud Messaging and App Engine")
       (home-page "https://developer.android.com")
       (license android-studio-license))))
+
+(studio)

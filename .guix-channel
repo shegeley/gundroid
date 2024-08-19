@@ -2,4 +2,4 @@
 
 (channel
  (version 0)
- (directory "gundroid"))
+ (directory "src"))

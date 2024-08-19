@@ -64,3 +64,5 @@
      "This package includes the most important command-line tools that are available, organized by the packages in which they're delivered")
     (home-page "https://developer.android.com")
     (license cli-tools-license)))
+
+(cli-tools)
