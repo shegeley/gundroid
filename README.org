@@ -8,7 +8,7 @@ Originally took Android Studio launching example from Julien Lepiller (@roptat) 
 * TODO Setting everything up to run Android Emulator (without Android Studio)
 Before lauching the emulator the followings needs to be properly packed (patchelf'ed) and expose proper binaries:
 - [X] cli-tools (apkanalyzer, avdmanager, lint, retrace, sdkmanager)
-- [ ] emulator (emulator, mksdcard)
+- [X] emulator (emulator, mksdcard)
 - [ ] build-tools (aapt2, apksigner, zipalign)
 - [ ] platform-tools (adb, etc1tool, fastboot, logcat)
 
