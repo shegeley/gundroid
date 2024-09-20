@@ -66,7 +66,7 @@
    "kdialog"
    "xmessage"
    "libnotify"
-   "gcc:lib"
+   "gcc-toolchain"
    "zenity"
    "adb"
    "e2fsprogs"
