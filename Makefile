@@ -1,4 +1,4 @@
-repl-exp := '((@ (nrepl server) run-nrepl-server) \#:port 7888)'
+repl-exp := '((@ (ares server) run-nrepl-server) \#:port 7888)'
 
 nrepl:
 	guix shell \
