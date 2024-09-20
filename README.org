@@ -1,6 +1,7 @@
 #+title: Readme
 
 Gundroid = Guix + Android ♥
+
 * Desciption
 This channel contains: [[https://developer.android.com/studio/command-line][cli-tools]], [[https://developer.android.com/studio/run/emulator][emulator]] and [[https://developer.android.com/studio][android-studio]].
 
@@ -22,36 +23,13 @@ Even having it packed propely emulator won't work, because it would expect envva
 
 This can be done by creating guix service after packing all them propely.
 * Launching Android Studio
-Currently launching Android Studio easily from the package itself is not implemented. It can be launched in a container. Assuming you are at this channel's root directory do the following:
+Android studio is packaged via ~(nonguix multiarch-container)~ same as ~steam~ in ~nonguix~.
 
-1. Build the ~studio~ package and get it's store path
-    #+begin_src sh
-    guix build -f gundroid/studio.scm -L.
-    ...
-    /gnu/store/...-android-studio-2022.1.1.19
-    #+end_src
+Install via: ~guix package -L src -f src/gundroid/studio.scm~. Then you can run it with ~android-studio~ command.
 
-2. Launch the container and bash into it
-    #+begin_src sh
-    guix shell -C -F -N -L. \
-        -e "(@@ (gundroid packages studio) studio)" \
-        --share=$XAUTHORITY --share=/tmp/.X11-unix \
-        --share=/dev/shm --expose=/etc/machine-id \
-        --share=$HOME --share=/dev/kvm \
-        --preserve=XAUTHORITY --preserve=DISPLAY \
-        -m $PWD/gundroid/manifest.scm \
-        -- bash
-    #+end_src
+You can run emulator from it.
 
-3. Go to studio's store path being in the container and launch the studio
-   #+begin_src sh
-   cd /gnu/store/...-android-studio-2022.1.1.19
-   ./bin/studio.sh
-   #+end_src
-
-But even with this the emulator inside the studio won't work. You have to propely set up Android envvars (~ANDOID_HOME~ and ~PATH~) to integrate with ~emulator~ and ~cli-tools~: see [[https://developer.android.com/studio/command-line/variables][environment variables reference]] on android's doc page.
-
-The best way to make the studio work would be to add emulator and cli-tools as packages's inputs and create separate gexp-script to automatically lauch it in a container (see nonguix steam example) with the customizable environment vars set where'd user like to have their ~ANDROID_HOME~.
+Don't forget to add [[https://guix.gnu.org/manual/devel/en/html_node/Virtualization-Services.html][libvrt-service-type]] to your's system config and set the virtualization option ON in bios to access emulator from Android Studio.
 * Nonfree software warning
 This channels includes nonfree software!
 
