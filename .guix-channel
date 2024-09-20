@@ -5,7 +5,11 @@
  (directory "src")
  (dependencies
   (channel
-   (name guix-android)
+   (name 'nonguix)
+   (url "https://gitlab.com/nonguix/nonguix")
+   (commit "99a47731552b179ea021a65a8a6f474cece68182"))
+  (channel
+   (name 'guix-android)
    (url "https://framagit.org/tyreunom/guix-android")
    (commit "795f11d4305bb7ce9a2e79669fe8cb4673a9d0c2"))
   (channel
