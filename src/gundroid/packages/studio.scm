@@ -15,9 +15,8 @@
 
   #:use-module (ice-9 match)
 
-  #:export (studio
-            specifications
-            versioning))
+  #:export (studio specifications versioning studio:specs
+            get-verinfo android-studio:electric-eel))
 
 (define android-studio-license
   ((@@ (guix licenses) license)
@@ -85,10 +84,21 @@
    "glib" ;; for gsettings
    "zlib"))
 
+(define (studio:specs verinfo)
+  (map
+   (lambda (s)
+     (list
+      (if (string-prefix-ci? "openjdk" s) "openjdk" s)
+      (specification->package+output s)))
+   (specifications verinfo)))
+
+(define* (get-verinfo version #:optional (versioning versioning))
+  (assoc-ref versioning version))
+
 (define* (studio #:key
                  (version "2022.1.1.19")
                  (versioning versioning))
-  (let ((verinfo (assoc-ref versioning version)))
+  (let ((verinfo (get-verinfo version versioning)))
     (package
       (name "android-studio")
       (version version)
@@ -99,11 +109,8 @@
          (sha256 (base32 (assoc-ref verinfo 'hash)))))
       (build-system binary-build-system)
       (supported-systems '("x86_64-linux"))
-      (arguments
-       (list
-        #:validate-runpath? #f))
-      (inputs (map specification->package+output
-                   (specifications verinfo)))
+      (arguments (list #:validate-runpath? #f))
+      (inputs (studio:specs verinfo))
       (synopsis
        "Official Integrated Development Environment (IDE) for Android app development")
       (description
@@ -120,4 +127,4 @@
       (home-page "https://developer.android.com")
       (license android-studio-license))))
 
-(studio)
+(define-public android-studio:electric-eel (studio))
