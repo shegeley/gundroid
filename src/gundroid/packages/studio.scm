@@ -82,6 +82,7 @@
    "pulseaudio"
    "util-linux:lib"
    "libx11"
+   "glib" ;; for gsettings
    "zlib"))
 
 (define* (studio #:key
