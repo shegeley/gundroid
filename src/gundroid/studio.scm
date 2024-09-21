@@ -8,7 +8,7 @@
 (define android-studio:exposed '("/etc/machine-id"))
 (define android-studio:preserved-env '("XAUTHORITY" "DISPLAY"))
 
-(define studio* android-studio:electric-eel)
+(define studio* android-studio:koala)
 
 (define union (fhs-union (studio:specs (get-verinfo (package-version studio*) versioning))))
 

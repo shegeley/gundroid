@@ -30,7 +30,11 @@
    version "/android-studio-" version "-linux.tar.gz"))
 
 (define versioning
-  `(("2022.1.1.19" .
+  `(("2024.1.2.13" . ;; koala
+     ((jdk-dir . "jbr")
+      (jdk-version . "17")
+      (hash . "16qvrdhgkj0m5xzxkm0bygvnnw66dv12qf5f29x8ca8g4df6b338")))
+    ("2022.1.1.19" . ;; electric-eel
      ((jdk-dir . "jbr")
       ;; NOTE: jbr = runtime environment based on OpenJDK for running IntelliJ Platform-based products on Windows, macOS, and Linux
       ;; https://github.com/JetBrains/JetBrainsRuntime
@@ -128,3 +132,4 @@
       (license android-studio-license))))
 
 (define-public android-studio:electric-eel (studio))
+(define-public android-studio:koala (studio #:version "2024.1.2.13"))
