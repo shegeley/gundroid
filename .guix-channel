@@ -7,15 +7,22 @@
   (channel
    (name 'nonguix)
    (url "https://gitlab.com/nonguix/nonguix")
-   (commit "99a47731552b179ea021a65a8a6f474cece68182"))
+   ;; bumped 2026-07: provides the modern `packages:' multiarch-container API
+   (commit "4bc86c61d5ab661614b099bfe524f7f5798988b3")
+   (introduction
+    (make-channel-introduction
+     "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
+     (openpgp-fingerprint
+      "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))
   (channel
    (name 'guix-android)
    (url "https://framagit.org/tyreunom/guix-android")
    (commit "795f11d4305bb7ce9a2e79669fe8cb4673a9d0c2"))
   (channel
    (name 'guix)
-   (url "https://git.savannah.gnu.org/git/guix.git")
-   (commit "79d2c8e7b9802715af505ded452bcef26351071f")
+   ;; savannah mirror moved to codeberg; bumped to the toolchain in use
+   (url "https://codeberg.org/guix/guix")
+   (commit "b0bcb0055c08c36175a056a2724d9e2557a08558")
    (introduction
     (make-channel-introduction
      "9edb3f66fd807b096b48283debdcddccfea34bad"
