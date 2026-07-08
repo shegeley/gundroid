@@ -1,34 +1,76 @@
 (define-module (gundroid studio)
  #:use-module (guix packages)
+ #:use-module (gnu packages)                 ;; specification->package
  #:use-module (gundroid packages studio)
- #:use-module (gnu packages bash)
- #:use-module (nonguix multiarch-container))
+ #:use-module (nonguix multiarch-container)
+ #:export (android-studio))
 
-(define android-studio:shared '("/tmp/.X11-unix" "/dev/shm" "/dev/kvm"))
-(define android-studio:exposed '("/etc/machine-id"))
-(define android-studio:preserved-env '("XAUTHORITY" "DISPLAY"))
+;; Android Studio, packaged as a nonguix multiarch (FHS) container — the same
+;; technique nonguix uses for Steam.  The IDE, its bundled JBR runtime, the SDK
+;; it downloads on first launch, and the emulator it starts all run inside an
+;; FHS sandbox, so the prebuilt Google binaries find the loader and shared
+;; libraries they expect.  NOTE: the real $HOME is NOT visible inside the
+;; sandbox; Studio keeps its config and the SDK it downloads under
+;; ~/.local/share/guix-sandbox-home.
+
+(define android-studio:shared
+  ;; Host paths bind-mounted read-write into the sandbox.
+  '("/tmp/.X11-unix"
+    "/dev/shm"
+    "/dev/kvm"        ;; hardware acceleration for the emulator (needs rw)
+    "/dev/dri"))      ;; GPU render nodes for the emulator / IDE
+
+(define android-studio:exposed
+  ;; Host paths bind-mounted read-only into the sandbox.
+  '("/etc/machine-id"))
+
+(define android-studio:preserved-env
+  ;; Regexps of host environment variables to carry into the sandbox so the
+  ;; GUI (X11 / Wayland) and audio work.
+  '("^DISPLAY$" "^XAUTHORITY$" "^WAYLAND_DISPLAY$"
+    "^XDG_RUNTIME_DIR$" "^PULSE_SERVER$"))
 
 (define studio* android-studio:koala)
 
-(define union (fhs-union (studio:specs (get-verinfo (package-version studio*) versioning))))
+;; Extra shared libraries the *downloaded* Android emulator dynamically links
+;; against (merged from (gundroid packages emulator)).  Studio's own specs
+;; already cover mesa/vulkan/fontconfig/etc.; these are the ones that are only
+;; needed once the emulator itself is launched from within the IDE.
+(define emulator-extra-lib-specs
+  '("openlibm" "pth" "libcxx" "ell" "libgccjit" "gperftools"))
 
-(define android-studio:ld.so.conf (packages->ld.so.conf (list union)))
-(define android-studio:ld.so.cache
- (ld.so.conf->ld.so.cache android-studio:ld.so.conf))
+(define (spec->input s)
+  (list s (specification->package s)))
+
+(define android-studio:packages
+  (append
+   fhs-min-libs
+   (studio:specs (get-verinfo (package-version studio*) versioning))
+   (map spec->input emulator-extra-lib-specs)))
+
+;; Reuse a single 64-bit union for both slots: Android Studio and the emulator
+;; are x86_64-only, so building the 32-bit (i686) union that the `packages:'
+;; field would create by default is both unnecessary and would try to build a
+;; large, largely-unsupported i686 world.
+(define android-studio:union
+  (fhs-union android-studio:packages #:name "android-studio-fhs"))
 
 (define android-studio-container
  (nonguix-container
   (name "android-studio")
   (wrap-package studio*)
   (run "/bin/studio.sh")
+  (union64 android-studio:union)
+  (union32 android-studio:union)
   (exposed android-studio:exposed)
   (shared android-studio:shared)
   (preserved-env android-studio:preserved-env)
-  (ld.so.conf android-studio:ld.so.conf)
-  (union64 union)
-  (union32 union)
-  (ld.so.cache android-studio:ld.so.cache)
-  (description "")))
+  (synopsis "Android Studio IDE running in a Guix FHS container")
+  (description
+   "Android Studio packaged as a nonguix multiarch (FHS) container, mirroring
+the way Steam is packaged in nonguix.  Launch it with the @command{android-studio}
+command.  The IDE downloads its own SDK and emulator into
+@file{~/.local/share/guix-sandbox-home} and runs them inside the sandbox.")))
 
 (define-public android-studio
  (nonguix-container->package android-studio-container))
