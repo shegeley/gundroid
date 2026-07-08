@@ -37,7 +37,10 @@
 ;; already cover mesa/vulkan/fontconfig/etc.; these are the ones that are only
 ;; needed once the emulator itself is launched from within the IDE.
 (define emulator-extra-lib-specs
-  '("openlibm" "pth" "libcxx" "ell" "libgccjit" "gperftools"))
+  '("openlibm" "pth" "libcxx" "ell" "libgccjit" "gperftools"
+    ;; GPU / EGL dispatch so the IDE and the emulator get accelerated
+    ;; rendering (populates share/glvnd/egl_vendor.d in the FHS union).
+    "libglvnd" "egl-wayland"))
 
 (define (spec->input s)
   (list s (specification->package s)))
