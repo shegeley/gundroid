@@ -102,12 +102,18 @@ guix build -L src -f src/gundroid/packages/emulator.scm
 #+end_src
 
 * Status
+Verified programmatically (built + run inside a Guix FHS container):
 - [X] cli-tools (sdkmanager, avdmanager, apkanalyzer, lint, retrace)
-- [X] emulator (emulator, mksdcard)
+- [X] emulator (~emulator -version~, ~emulator -accel-check~ → KVM usable)
 - [X] build-tools (aapt2, apksigner, zipalign)
 - [X] platform-tools (adb, etc1tool, fastboot, logcat)
 - [X] ~ANDROID_HOME~ assembly (~(gundroid emulator) android-sdk~)
-- [X] Android Studio launches in an FHS container and manages its own SDK/emulator
+- [X] Android Studio container builds; launching it starts the JVM and the
+  IntelliJ platform (a headless run stops at "Unable to detect graphics
+  environment", i.e. only the missing display). Run it from a graphical session
+  to get the UI, then use its built-in SDK Manager / AVD Manager to download a
+  platform + system image and boot the emulator (KVM and ~/dev/dri~ are shared
+  into the sandbox).
 
 * Nonfree software warning
 This channel includes nonfree software!
