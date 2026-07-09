@@ -124,4 +124,8 @@
    (home-page "https://developer.android.com")
    (license emulator-license)))
 
-(emulator)
+;; A concrete, installable package so the channel exposes it to
+;; `guix install' / `guix package -A'.
+(define-public android-emulator (emulator))
+
+android-emulator
