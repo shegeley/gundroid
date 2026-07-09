@@ -30,7 +30,7 @@
   '("^DISPLAY$" "^XAUTHORITY$" "^WAYLAND_DISPLAY$"
     "^XDG_RUNTIME_DIR$" "^PULSE_SERVER$"))
 
-(define studio* android-studio:koala)
+(define studio* android-studio:quail)
 
 ;; Extra shared libraries the *downloaded* Android emulator dynamically links
 ;; against (merged from (gundroid packages emulator)).  Studio's own specs

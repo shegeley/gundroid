@@ -24,13 +24,32 @@
    "https://developer.android.com/studio"
    ""))
 
+;; Older releases derive their download URL from the version; newer ones (from
+;; Ladybug on) use codename-based filenames, so those carry an explicit `url'.
 (define (uri-template version)
   (string-append
    "https://redirector.gvt1.com/edgedl/android/studio/ide-zips/"
    version "/android-studio-" version "-linux.tar.gz"))
 
 (define versioning
-  `(("2024.1.2.13" . ;; koala
+  ;; https://developer.android.com/studio/archive — hashes from Google's
+  ;; official release list (jb.gg/android-studio-releases-list.json).
+  `(("2026.1.1.8" . ;; quail (latest stable)
+     ((jdk-dir . "jbr")
+      (jdk-version . "21")
+      (url . "https://edgedl.me.gvt1.com/android/studio/ide-zips/2026.1.1.8/android-studio-quail1-linux.tar.gz")
+      (hash . "1lw3gn0hqadhlnnkv0vhb36q4apal9ghmq4hibj0gggs7jxa87qc")))
+    ("2025.3.4.6" . ;; panda
+     ((jdk-dir . "jbr")
+      (jdk-version . "21")
+      (url . "https://edgedl.me.gvt1.com/android/studio/ide-zips/2025.3.4.6/android-studio-panda4-linux.tar.gz")
+      (hash . "1lwza35zm01k0z01c7qdpal24c11gvp2p268c66v8f5amh4zz9rj")))
+    ("2025.2.1.7" . ;; otter
+     ((jdk-dir . "jbr")
+      (jdk-version . "21")
+      (url . "https://edgedl.me.gvt1.com/edgedl/android/studio/ide-zips/2025.2.1.7/android-studio-2025.2.1.7-linux.tar.gz")
+      (hash . "1cccwxjivf5833xarzlffs1c39dvb4wgyll85lc4qvkl5nh1zbqn")))
+    ("2024.1.2.13" . ;; koala
      ((jdk-dir . "jbr")
       (jdk-version . "17")
       (hash . "16qvrdhgkj0m5xzxkm0bygvnnw66dv12qf5f29x8ca8g4df6b338")))
@@ -109,7 +128,7 @@
       (source
        (origin
          (method url-fetch)
-         (uri (uri-template version))
+         (uri (or (assoc-ref verinfo 'url) (uri-template version)))
          (sha256 (base32 (assoc-ref verinfo 'hash)))))
       (build-system binary-build-system)
       (supported-systems '("x86_64-linux"))
@@ -133,3 +152,6 @@
 
 (define-public android-studio:electric-eel (studio))
 (define-public android-studio:koala (studio #:version "2024.1.2.13"))
+(define-public android-studio:otter (studio #:version "2025.2.1.7"))
+(define-public android-studio:panda (studio #:version "2025.3.4.6"))
+(define-public android-studio:quail (studio #:version "2026.1.1.8"))
