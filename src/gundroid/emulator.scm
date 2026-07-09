@@ -1,11 +1,14 @@
 (define-module (gundroid emulator)
-  #:use-module (guix packages)
-  #:use-module (guix gexp)
-  #:use-module (guix build-system trivial)
-  #:use-module ((guix licenses) #:prefix license:)
+  #:use-module ((guix packages) #:select (package))
+  ;; #$ (ungexp) is a syntactic literal recognised inside `gexp', not a
+  ;; standalone binding, so only `gexp' is selected.
+  #:use-module ((guix gexp) #:select (gexp))
+  #:use-module ((guix build-system trivial) #:select (trivial-build-system))
 
-  #:use-module (gundroid packages emulator)
-  #:use-module (gundroid packages cli-tools)
+  #:use-module ((gundroid packages emulator) #:select (emulator))
+  #:use-module ((gundroid packages cli-tools)
+                #:select (cmdline-tools platform-tools build-tools
+                          build-tools-version))
 
   #:export (android-sdk))
 

@@ -1,7 +1,8 @@
 (define-module (gundroid manifest)
-  #:use-module (gundroid utils)
-  #:use-module (gnu packages)
-  #:use-module ((gundroid packages studio) #:prefix studio:))
+  #:use-module ((gnu packages) #:select (specifications->manifest))
+  #:use-module ((gundroid packages studio)
+                #:select (specifications versioning)
+                #:prefix studio:))
 
 (specifications->manifest
  (studio:specifications

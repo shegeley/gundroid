@@ -1,8 +1,12 @@
 (define-module (gundroid studio)
- #:use-module (guix packages)
- #:use-module (gnu packages)                 ;; specification->package
- #:use-module (gundroid packages studio)
- #:use-module (nonguix multiarch-container)
+ #:use-module ((guix packages) #:select (package-version))
+ #:use-module ((gnu packages) #:select (specification->package))
+ #:use-module ((gundroid packages studio)
+               #:select (studio:specs get-verinfo versioning
+                         android-studio:quail))
+ #:use-module ((nonguix multiarch-container)
+               #:select (fhs-union fhs-min-libs
+                         nonguix-container nonguix-container->package))
  #:export (android-studio))
 
 ;; Android Studio, packaged as a nonguix multiarch (FHS) container — the same

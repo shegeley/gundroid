@@ -1,23 +1,13 @@
 (define-module (gundroid packages emulator)
-  #:use-module (gnu)
+  #:use-module ((guix packages) #:select (package origin base32))
+  #:use-module ((guix download) #:select (url-fetch))
+  #:use-module ((gnu packages)
+                #:select (specification->package specification->package+output))
+  #:use-module ((nonguix build-system binary) #:select (binary-build-system))
+  #:use-module ((gundroid utils)
+                #:select (fix ref-in specification->package-name))
 
-  #:use-module (guix download)
-  #:use-module (guix packages)
-  #:use-module (guix gexp)
-
-  #:use-module ((guix licenses) #:prefix license:)
-
-  #:use-module (gnu packages compression) ;; unzip
-
-  #:use-module (nonguix build-system binary)
-
-  #:use-module (gundroid utils)
-
-  #:use-module (srfi srfi-1)
-
-  #:use-module (ice-9 match)
-
-  #:export (emulator))
+  #:export (emulator android-emulator))
 
 (define (uri-template build-id)
   (string-append "https://redirector.gvt1.com/edgedl/android/repository/emulator-linux_x64-" build-id ".zip"))
@@ -117,15 +107,22 @@
           (mkdir-p bin)
           (symlink exe (string-append bin "/emulator"))))))))
    (supported-systems '("x86_64-linux"))
-   (synopsis
-    "The Android Emulator simulates Android devices on your computer")
+   (synopsis "Simulate Android devices on your computer")
    (description
-    "The Android Emulator simulates Android devices on your computer so that you can test your application on a variety of devices and Android API levels without needing to have each physical device. It offers: Flexibility, High fidelity, Speed.")
+    "The Android Emulator simulates Android devices on your computer so that you
+can test your application on a variety of devices and Android API levels without
+needing each physical device.  It offers:
+
+@itemize
+@item flexibility, running many device configurations and API levels;
+@item high fidelity, emulating phone features such as GPS and sensors;
+@item speed, through hardware acceleration.
+@end itemize")
    (home-page "https://developer.android.com")
    (license emulator-license)))
 
 ;; A concrete, installable package so the channel exposes it to
 ;; `guix install' / `guix package -A'.
-(define-public android-emulator (emulator))
+(define android-emulator (emulator))
 
 android-emulator

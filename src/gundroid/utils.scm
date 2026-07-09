@@ -1,10 +1,10 @@
 (define-module (gundroid utils)
-
-  #:use-module (guix gexp)
-
-  #:use-module (srfi srfi-1)
-
-  #:use-module (ice-9 match)
+  ;; ungexp / ungexp-splicing (the #$ and #$@ readers) are syntactic literals
+  ;; recognised inside `gexp', not standalone bindings, so only `gexp' and
+  ;; `with-imported-modules' are selected here.
+  #:use-module ((guix gexp) #:select (with-imported-modules gexp))
+  #:use-module ((srfi srfi-1) #:select (every first))
+  #:use-module ((ice-9 match) #:select (match match-lambda))
 
   #:export (specification->package-name
             fix ref-in interpose))

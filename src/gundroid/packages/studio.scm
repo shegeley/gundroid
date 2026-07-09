@@ -1,19 +1,9 @@
 (define-module (gundroid packages studio)
-  #:use-module (gnu)
-
-  #:use-module (guix download)
-  #:use-module (guix packages)
-  #:use-module ((guix licenses) #:prefix license:)
-
-  #:use-module (gnu packages compression) ;; unzip
-
-  #:use-module (nonguix build-system binary)
-
-  #:use-module (gundroid utils)
-
-  #:use-module (srfi srfi-1)
-
-  #:use-module (ice-9 match)
+  #:use-module ((guix packages) #:select (package origin base32))
+  #:use-module ((guix download) #:select (url-fetch))
+  #:use-module ((gnu packages) #:select (specification->package+output))
+  #:use-module ((nonguix build-system binary) #:select (binary-build-system))
+  #:use-module ((gundroid utils) #:select (ref-in))
 
   #:export (studio specifications versioning studio:specs
             get-verinfo android-studio:electric-eel))
@@ -135,18 +125,25 @@
       (arguments (list #:validate-runpath? #f))
       (inputs (studio:specs verinfo))
       (synopsis
-       "Official Integrated Development Environment (IDE) for Android app development")
+       "Official integrated development environment for Android app development")
       (description
-       "Based on the powerful code editor and developer tools from IntelliJ IDEA, Android Studio offers even more features that enhance your productivity when building Android apps:
-    - A flexible Gradle-based build system
-    - A fast and feature-rich emulator
-    - A unified environment where you can develop for all Android devices
-    - Apply Changes to push code and resource changes to your running app without restarting your app
-    - Code templates and GitHub integration to help you build common app features and import sample code
-    - Extensive testing tools and frameworks
-    - Lint tools to catch performance, usability, version compatibility, and other problems
-    - C++ and NDK support
-    - Built-in support for Google Cloud Platform, making it easy to integrate Google Cloud Messaging and App Engine")
+       "Android Studio is the official IDE for Android app development, built on
+the code editor and developer tools of IntelliJ IDEA.  It offers:
+
+@itemize
+@item a flexible Gradle-based build system;
+@item a fast and feature-rich emulator;
+@item a unified environment where you can develop for all Android devices;
+@item Apply Changes to push code and resource changes to a running app without
+restarting it;
+@item code templates and GitHub integration to help build common app features
+and import sample code;
+@item extensive testing tools and frameworks;
+@item lint tools to catch performance, usability, version compatibility and
+other problems;
+@item C++ and NDK support;
+@item built-in support for Google Cloud Platform.
+@end itemize")
       (home-page "https://developer.android.com")
       (license android-studio-license))))
 
