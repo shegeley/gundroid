@@ -6,7 +6,7 @@
 (channel-news
  (version 0)
 
- (entry (commit "6d7a6bec90b07ea6bf3e6343e2454a36efd6cf07")
+ (entry (commit "fdb2bfa0d0e7b1d9d14471ef960842c3db92fdc2")
         (title (en "gundroid works: Android Studio, emulator and real devices"))
         (body (en "gundroid now works end to end on a current Guix.
 
