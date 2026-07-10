@@ -123,7 +123,11 @@
                  (versioning versioning))
   (let ((verinfo (get-verinfo version versioning)))
     (package
-      (name "android-studio")
+      ;; The raw prebuilt-binary IDE.  Named distinctly from the user-facing
+      ;; `android-studio' (the FHS-container package in (gundroid studio)) so
+      ;; that resolving the spec "android-studio" never picks this un-sandboxed
+      ;; variant instead of the real one.
+      (name "android-studio-bin")
       (version version)
       (source
        (origin

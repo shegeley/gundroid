@@ -115,7 +115,11 @@ them.")
 
 (define android-studio-container
  (nonguix-container
-  (name "android-studio")
+  ;; Distinct package name from the user-facing `android-studio' below, so
+  ;; name-based resolution is unambiguous; `binary-name' keeps the launcher on
+  ;; PATH called `android-studio' (what the desktop entry's Exec= expects).
+  (name "android-studio-fhs")
+  (binary-name "android-studio")
   (wrap-package studio*)
   (run "/bin/studio.sh")
   (union64 android-studio:union)
