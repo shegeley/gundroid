@@ -1,23 +1,13 @@
 (define-module (gundroid packages emulator)
-  #:use-module (gnu)
+  #:use-module ((guix packages) #:select (package origin base32))
+  #:use-module ((guix download) #:select (url-fetch))
+  #:use-module ((gnu packages)
+                #:select (specification->package specification->package+output))
+  #:use-module ((nonguix build-system binary) #:select (binary-build-system))
+  #:use-module ((gundroid utils)
+                #:select (fix ref-in specification->package-name))
 
-  #:use-module (guix download)
-  #:use-module (guix packages)
-  #:use-module (guix gexp)
-
-  #:use-module ((guix licenses) #:prefix license:)
-
-  #:use-module (gnu packages compression) ;; unzip
-
-  #:use-module (nonguix build-system binary)
-
-  #:use-module (gundroid utils)
-
-  #:use-module (srfi srfi-1)
-
-  #:use-module (ice-9 match)
-
-  #:export (emulator))
+  #:export (emulator android-emulator))
 
 (define (uri-template build-id)
   (string-append "https://redirector.gvt1.com/edgedl/android/repository/emulator-linux_x64-" build-id ".zip"))
@@ -99,32 +89,40 @@
            specification->package-name
            specifications)))
       #:phases
-      (modify-phases
-       ,(fix (list
-              'qemu
-              (string-append "qemu" "/linux-x86_64")
-              "qemu"))
-       (add-after 'install 'install-wrapper
-                  (lambda* (#:key inputs outputs system #:allow-other-keys)
-                    (let* ((out (assoc-ref outputs "out"))
-                           (bin (string-append out "/bin"))
-                           (emulator (string-append out "/emulator")))
-                      (mkdir-p bin)
-                      (symlink emulator (string-append bin "/emulator")))))
-       (add-after 'install-wrapper 'export-shared-libs
-                  (lambda* (#:key inputs outputs system #:allow-other-keys)
-                    (let* ((out (assoc-ref outputs "out"))
-                           (exe (string-append out "/bin/emulator"))
-                           (lib (string-append out "/lib64")))
-                      (wrap-program exe
-                                    `("LD_LIBRARY_PATH" ":" prefix
-                                      (,lib)))))))))
+      (modify-phases ,(fix (list 'qemu (string-append "qemu" "/linux-x86_64") "qemu"))
+       (add-after 'install 'wrap-emulator
+        (lambda* (#:key inputs outputs system #:allow-other-keys)
+         (let* ((out (assoc-ref outputs "out"))
+                (bin (string-append out "/bin"))
+                ;; The root `emulator' launcher is what the SDK, avdmanager and
+                ;; Android Studio invoke.  patchelf strips its $ORIGIN rpath, so
+                ;; wrap it to put the bundled shared libraries back on the path
+                ;; (the previous version only wrapped bin/emulator, which the
+                ;; SDK layout never calls).
+                (exe (string-append out "/emulator"))
+                (lib64 (string-append out "/lib64"))
+                (qtlib (string-append out "/lib64/qt/lib")))
+          (wrap-program exe
+           `("LD_LIBRARY_PATH" ":" prefix (,lib64 ,qtlib)))
+          (mkdir-p bin)
+          (symlink exe (string-append bin "/emulator"))))))))
    (supported-systems '("x86_64-linux"))
-   (synopsis
-    "The Android Emulator simulates Android devices on your computer")
+   (synopsis "Simulate Android devices on your computer")
    (description
-    "The Android Emulator simulates Android devices on your computer so that you can test your application on a variety of devices and Android API levels without needing to have each physical device. It offers: Flexibility, High fidelity, Speed.")
+    "The Android Emulator simulates Android devices on your computer so that you
+can test your application on a variety of devices and Android API levels without
+needing each physical device.  It offers:
+
+@itemize
+@item flexibility, running many device configurations and API levels;
+@item high fidelity, emulating phone features such as GPS and sensors;
+@item speed, through hardware acceleration.
+@end itemize")
    (home-page "https://developer.android.com")
    (license emulator-license)))
 
-(emulator)
+;; A concrete, installable package so the channel exposes it to
+;; `guix install' / `guix package -A'.
+(define android-emulator (emulator))
+
+android-emulator

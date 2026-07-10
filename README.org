@@ -2,38 +2,113 @@
 
 Gundroid = Guix + Android ♥
 
-* Desciption
-This channel contains: [[https://developer.android.com/studio/command-line][cli-tools]], [[https://developer.android.com/studio/run/emulator][emulator]] and [[https://developer.android.com/studio][android-studio]].
+* Description
+This channel packages the [[https://developer.android.com/studio][Android Studio]] IDE, the [[https://developer.android.com/studio/run/emulator][Android emulator]], and the [[https://developer.android.com/studio/command-line][SDK command-line tools]] for GNU Guix.
 
-Originally took Android Studio launching example from Julien Lepiller (@roptat) [[https://lepiller.eu/en/running-android-studio-on-guix.html][blogpost]]. You can also take a look on his [[https://framagit.org/tyreunom/guix-android][guix-android]] channel.
-* TODO Setting everything up to run Android Emulator (without Android Studio)
-Before lauching the emulator the followings needs to be properly packed (patchelf'ed) and expose proper binaries:
-- [X] cli-tools (apkanalyzer, avdmanager, lint, retrace, sdkmanager)
-- [X] emulator (emulator, mksdcard)
-- [ ] build-tools (aapt2, apksigner, zipalign)
-- [ ] platform-tools (adb, etc1tool, fastboot, logcat)
+There are two ways to use it:
 
-(see [[https://developer.android.com/studio/command-line][(1)]] as reference)
+1. *Android Studio in an FHS container* (recommended) — Studio downloads and runs its own SDK and emulator inside a Guix sandbox. This is the path that "just works": the sandbox provides a normal FHS filesystem, so the prebuilt Google binaries (emulator, adb, aapt2, …) find the loader and libraries they expect. Modelled on how ~steam~ is packaged in [[https://gitlab.com/nonguix/nonguix][nonguix]].
+2. *Standalone SDK packages* — the emulator and SDK tools packaged individually, assembled into an ~ANDROID_HOME~ you can drive from the command line inside a ~guix shell --emulate-fhs~ environment.
 
-Even having it packed propely emulator won't work, because it would expect envvar ~ANDROID_HOME~ set propely and the content of this directory to replicate exact file-system structure (from (1)):
-- commandline tools bins: cmdline-tools/version/bin/
-- build tools bins: build-tools/version
-- emulator's bins: emulator
-- platform-tools bins: platform-tools
+Originally based on Julien Lepiller (@roptat)'s [[https://lepiller.eu/en/running-android-studio-on-guix.html][blogpost]] and his [[https://framagit.org/tyreunom/guix-android][guix-android]] channel; the container approach follows [[https://gofranz.com/blog/react-native-android-on-guix-without-docker/][gofranz's write-up]].
 
-This can be done by creating guix service after packing all them propely.
-* Launching Android Studio
-Android studio is packaged via ~(nonguix multiarch-container)~ same as ~steam~ in ~nonguix~.
+* Install as a Guix channel
+gundroid is a Guix channel. Pull it (see [[file:channels.scm][channels.scm]]) and install packages by name — nonguix is pulled automatically as a declared dependency:
+#+begin_src sh
+guix pull -C channels.scm
+guix install android-studio      # the IDE (FHS container wrapper)
+guix install android-sdk         # assembled read-only ANDROID_HOME
+guix install android-emulator    # standalone emulator
+guix package -A android          # list everything the channel provides
+#+end_src
 
-Install via: ~guix package -L src -f src/gundroid/studio.scm~. Then you can run it with ~android-studio~ command.
+Or, without pulling, build/run straight from a checkout with ~-L src~ (the examples below use this form).
 
-You can run emulator from it.
+* Android Studio (recommended)
+Android Studio is packaged via ~(nonguix multiarch-container)~, the same technique used for ~steam~.
 
-Don't forget to add [[https://guix.gnu.org/manual/devel/en/html_node/Virtualization-Services.html][libvrt-service-type]] to your's system config and set the virtualization option ON in bios to access emulator from Android Studio.
+Install:
+#+begin_src sh
+guix package -L src -f src/gundroid/studio.scm
+#+end_src
+
+Run:
+#+begin_src sh
+android-studio
+#+end_src
+
+Installing the package also drops a ~.desktop~ entry and icon into the profile, so *Android Studio* shows up in your application menu — launching it there runs the same wrapper.
+
+On first launch Studio's setup wizard downloads the SDK, a platform, and (if you create a virtual device) the emulator + a system image. Everything is written to the sandbox home =~/.local/share/guix-sandbox-home= (the real =$HOME= is *not* visible inside the container), so your host home stays clean.
+
+You can create an AVD and run the emulator directly from Studio. Requirements:
+- Enable hardware virtualization (VT-x/AMD-V) in your BIOS.
+- =/dev/kvm= must exist and be accessible (be a member of the =kvm= group); it is shared read-write into the container.
+- A GPU device (=/dev/dri=) is shared for accelerated rendering.
+
+You do *not* need the ~libvirt~ service for Studio's own emulator — it uses KVM directly. (You still need ~libvirt~ if you want other virtualization tooling.)
+
+* Standalone SDK / emulator
+The prebuilt SDK components are packaged in ~(gundroid packages cli-tools)~ and ~(gundroid packages emulator)~ and assembled into a standard ~ANDROID_HOME~ layout by ~(gundroid emulator) android-sdk~:
+
+#+begin_example
+cmdline-tools/latest/bin/   sdkmanager, avdmanager, apkanalyzer, lint, retrace
+platform-tools/             adb, fastboot, etc1tool, logcat
+build-tools/34.0.0/         aapt2, apksigner, zipalign
+emulator/                   emulator, mksdcard
+#+end_example
+
+Build the assembled SDK:
+#+begin_src sh
+guix build -L src -e '(@ (gundroid emulator) android-sdk)'
+#+end_src
+
+These are dynamically-linked prebuilt binaries, so run them inside a Guix FHS container. The following is verified to work — ~adb~, ~aapt2~, ~sdkmanager~, ~avdmanager~ and the ~emulator~ all run, and ~emulator -accel-check~ confirms KVM is usable inside the container:
+#+begin_src sh
+SDK=$(guix build -L src -e '(@ (gundroid emulator) android-sdk)')
+guix shell -L src --container --emulate-fhs --network --expose=/dev/kvm \
+  coreutils bash grep sed which findutils procps \
+  openjdk gcc-toolchain zlib glibc mesa vulkan-loader pulseaudio alsa-lib \
+  -e '(@ (gundroid emulator) android-sdk)' \
+  -- env ANDROID_HOME="$SDK" ANDROID_SDK_ROOT="$SDK" bash
+# inside the shell:
+#   adb version
+#   aapt2 version
+#   $ANDROID_HOME/emulator/emulator -accel-check
+#   $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_HOME --list
+#+end_src
+
+Two caveats for the standalone SDK:
+- ~sdkmanager~ needs an explicit ~--sdk_root=$ANDROID_HOME~ because the ~cmdline-tools/latest~ symlink points into the store, so it cannot infer its own location.
+- The assembled ~android-sdk~ is a *read-only* store directory, so ~sdkmanager~ cannot install additional packages (system images, platforms) into it, and you cannot boot a full AVD from it. For a mutable SDK and to actually boot a virtual device, use Android Studio (above) — which downloads a writable SDK into its sandbox home — or copy this tree to a writable location first.
+
+The emulator can also be built and run on its own:
+#+begin_src sh
+guix build -L src -f src/gundroid/packages/emulator.scm
+#+end_src
+
+* Status — it works
+Android Studio runs, and the emulator it downloads *boots and runs fast* inside the container. The full workflow is verified end to end:
+- [X] Android Studio (2026.1 Quail, JBR 21) launches with GUI, SDK Manager and AVD Manager, and a desktop-menu entry + icon.
+- [X] Emulator boots a virtual device with KVM acceleration; on a machine with a working GPU it uses hardware Vulkan (mesa RADV/ANV for AMD/Intel), falling back to software rendering otherwise.
+- [X] *Tested: a Pixel 10 AVD* (Android 37 image) boots to the home screen.
+- [X] *Tested: a Pixel 9 physical device* over the network (ADB Wi-Fi) — deploy and debug on real hardware.
+- [X] Standalone CLI SDK: cli-tools, platform-tools, build-tools, emulator and the assembled ~ANDROID_HOME~ all run inside a ~guix shell --emulate-fhs~ container.
+- [X] Installable as a Guix channel (~guix install android-studio~).
+
+Findings from getting the emulator to launch (all fixed in the container's package set):
+- The downloaded emulator is a prebuilt ELF that only runs in an FHS sandbox — the nonguix multiarch container provides it.
+- Its bundled ~qemu-system-x86_64~ links (via Qt6 WebEngine) against libraries missing from the sandbox: ~libxkbfile~, ~libbsd~, ~nspr~ and ~nss~ (whose libs live in ~lib/nss/~ and had to be flattened onto the library path) — otherwise it died with ~exit code 127~.
+- Its Qt UI needs ~libICE~/~libSM~ (X11 session management); without them it aborted with "no Qt platform plugin could be initialized" (~exit code 134~) — Qt 6.5's "xcb-cursor0" hint is misleading.
+- Studio ships its own ~adb~; a second ~adb~ on ~PATH~ (or a stray host adb server) fights it for port 5037 and leaves the device stuck "offline", so no adb is bundled and ~make debug~ clears stray servers/locks first.
+- ~glib:bin~ is needed for ~gsettings~; GPU vendor/PRIME env vars are carried into the sandbox for hardware rendering.
+
+There is a ~Makefile~: ~make build~ builds the container, ~make debug~ cleans up stray adb/locks, launches with logging to ~android-studio.log~ and maximal debug env.
+
 * Nonfree software warning
-This channels includes nonfree software!
+This channel includes nonfree software!
 
-Please do NOT promote this repository on any official Guix communication channels, such as their mailing lists or IRC channel, even in response to support requests! This is to show respect for the Guix project’s strict policy against recommending nonfree software, and to avoid any unnecessary hostility.
+Please do NOT promote this repository on any official Guix communication channels, such as their mailing lists or IRC channel, even in response to support requests! This is to show respect for the Guix project's strict policy against recommending nonfree software, and to avoid any unnecessary hostility.
 
 * Legal notices
 [[https://developer.android.com/legal][Android legal notice]]
