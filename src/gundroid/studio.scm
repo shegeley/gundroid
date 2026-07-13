@@ -1,8 +1,10 @@
 (define-module (gundroid studio)
  #:use-module ((guix packages) #:select (package package-version package-license))
- #:use-module ((guix gexp) #:select (gexp plain-file))
+ #:use-module ((guix gexp) #:select (gexp plain-file computed-file with-extensions))
  #:use-module ((guix build-system trivial) #:select (trivial-build-system))
  #:use-module ((gnu packages) #:select (specification->package))
+ #:use-module ((gnu packages guile-xyz)
+               #:select (guile-ini guile-smc guile-lib))
  #:use-module ((gundroid packages studio)
                #:select (studio:specs get-verinfo versioning
                          android-studio:quail))
@@ -137,20 +139,33 @@ command.  The IDE downloads its own SDK and emulator into
 (define android-studio-wrapper
  (nonguix-container->package android-studio-container))
 
+;; guile-ini's (ini) module pulls in (ini fsm), which needs guile-smc and
+;; guile-lib; all three go on the builder's load path via with-extensions.
+(define %guile-ini-extensions (list guile-ini guile-smc guile-lib))
+
+;; Desktop entry as guile-ini data: (("Section" ("Key" . "Value") ...)).
+;; scm->ini serialises it to the freedesktop "[Section]\nKey=Value" form.
+(define %android-studio-desktop-entry
+  '(("Desktop Entry"
+     ("Type"           . "Application")
+     ("Name"           . "Android Studio")
+     ("GenericName"    . "Android IDE")
+     ("Comment"        . "Official IDE for Android application development")
+     ("Exec"           . "android-studio %f")
+     ("Icon"           . "android-studio")
+     ("Terminal"       . "false")
+     ("StartupNotify"  . "true")
+     ("StartupWMClass" . "jetbrains-studio")
+     ("Categories"     . "Development;IDE;"))))
+
 (define android-studio-desktop
-  (plain-file "android-studio.desktop"
-   "[Desktop Entry]
-Type=Application
-Name=Android Studio
-GenericName=Android IDE
-Comment=Official IDE for Android application development
-Exec=android-studio %f
-Icon=android-studio
-Terminal=false
-StartupNotify=true
-StartupWMClass=jetbrains-studio
-Categories=Development;IDE;
-"))
+  (computed-file "android-studio.desktop"
+   (with-extensions %guile-ini-extensions
+     #~(begin
+         (use-modules (ini))
+         (call-with-output-file #$output
+           (lambda (port)
+             (scm->ini '#$%android-studio-desktop-entry #:port port)))))))
 
 ;; Wrap the container package with a desktop entry + icon so Android Studio
 ;; shows up in the application menu.  Exec calls the `android-studio' wrapper on
