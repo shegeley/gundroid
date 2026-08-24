@@ -16,8 +16,13 @@
    ;; resolution.
    (name nonguix)
    (url "https://gitlab.com/nonguix/nonguix")
-   ;; bumped 2026-07: provides the modern `packages:' multiarch-container API
-   (commit "4bc86c61d5ab661614b099bfe524f7f5798988b3")
+   ;; bumped 2026-08-24: 4bc86c6 (2026-07) went stale against current guix
+   ;; HEAD -- guix pruned the linux-libre-7.0 binding nonguix's checkout at
+   ;; that commit still referenced, breaking cuirass's `nonguix' checkout
+   ;; step for this spec ("Unbound variable: linux-libre-7.0"). caa8c0b is
+   ;; what cuirass's own (unpinned) `nonguix' spec resolves to right now
+   ;; and builds clean against the same guix commit.
+   (commit "caa8c0b4646b993537be13c9bc819b3df68ab9b2")
    ;; NB: inside .guix-channel an introduction is the static
    ;; `channel-introduction' record — NOT `make-channel-introduction' (that is
    ;; the form for a channels.scm).
